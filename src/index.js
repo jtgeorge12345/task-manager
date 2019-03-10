@@ -1,6 +1,4 @@
 const express = require("express");
-const app = express();
-const port = process.env.PORT || 3000;
 const userRouter = require('./routers/user.js');
 const taskRouter = require('./routers/task.js');
 require('./db/mongoose');
@@ -8,6 +6,20 @@ require('./db/mongoose');
 // app.use((req, res, next) => {
 //   res.status(503).send("App temporarily offline")
 // })
+
+const app = express();
+const port = process.env.PORT || 3000;
+// 
+// const multer = require('multer')
+// const upload = multer({
+//   dest:'images'
+// })
+//
+// app.post('/upload', upload.single('upload'), (req, res) => {
+//   res.send()
+// })
+
+
 
 app.use(express.json());
 app.use(userRouter);
@@ -29,9 +41,9 @@ const main = async ()=> {
   // await task.populate('owner').execPopulate()
   // console.log(task.owner)
 
-  const user = await User.findById('5c848df141fc740b1c392ffb')
-  await user.populate('tasks').execPopulate()
-  console.log(user.tasks)
+  // const user = await User.findById('5c848df141fc740b1c392ffb')
+  // await user.populate('tasks').execPopulate()
+  // console.log(user.tasks)
 }
 
-main()
+//

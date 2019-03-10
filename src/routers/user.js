@@ -2,7 +2,19 @@ const express = require('express');
 const User = require('../models/user.js');
 const router = new express.Router();
 const auth = require('../middleware/auth.js')
-
+const multer = require('multer')
+const sharp = require('sharp')
+const avatar = multer({
+  limits: {
+    fileSize: 1000000
+  },
+  fileFilter(req, file, cb) {
+    if (!file.originalname.match(/\.(jpg|jpeg|png)$/)) {
+        return(cb (new Error("File type must be png, pdf, or jpg")))
+    }
+    cb(undefined, true)
+  }
+})
 
 router.post('/users', async (req, res) => {
   const user = new User(req.body);
@@ -45,6 +57,37 @@ router.post("/users/logoutAll", auth, async (req, res) => {
     res.send("Logged out of all devices")
   } catch (e) {
     res.status(500).send()
+  }
+})
+
+router.post("/users/me/avatar", auth, avatar.single('avatar'), async (req, res) => {
+  const buffer= await sharp(req.file.buffer).resize({height:200,width:300}).png().toBuffer()
+  req.user.avatar = buffer
+  await req.user.save()
+  res.send();
+}, (error, req, res, next) => {
+  res.status(400).send({error:error.message})
+} )
+
+router.delete('/users/me/avatar', auth, async (req, res) => {
+  req.user.avatar = undefined
+  await req.user.save()
+  res.send()
+})
+
+router.get('/users/:id/avatar', async (req, res) => {
+  try {
+    const user = await User.findById(req.params.id)
+
+    if (! user || !user.avatar) {
+      throw new Error()
+    }
+
+    res.set('Content-Type', 'image/png')
+    res.send(user.avatar)
+
+  } catch(e) {
+    res.status(404).send({e: e.message})
   }
 })
 
